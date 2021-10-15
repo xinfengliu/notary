@@ -6,6 +6,7 @@ import (
 	"time"
 
 	jose "github.com/dvsekhvalnov/jose2go"
+	"github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/storage/rethinkdb"
 	"github.com/theupdateframework/notary/trustmanager"
@@ -163,6 +164,7 @@ func (rdb *RethinkDBKeyStore) getKey(keyID string) (*RDBPrivateKey, string, erro
 	dbPrivateKey := RDBPrivateKey{}
 	res, err := gorethink.DB(rdb.dbName).Table(dbPrivateKey.TableName()).Filter(gorethink.Row.Field("key_id").Eq(keyID)).Run(rdb.sess)
 	if err != nil {
+		logrus.Errorf("### Error getting key_id '%s': %v", keyID, err)
 		return nil, "", err
 	}
 	defer res.Close()
@@ -181,6 +183,7 @@ func (rdb *RethinkDBKeyStore) getKey(keyID string) (*RDBPrivateKey, string, erro
 	// Decrypt private bytes from the gorm key
 	decryptedPrivKey, _, err := jose.Decode(string(dbPrivateKey.Private), passphrase)
 	if err != nil {
+		logrus.Errorf("### Error jose.Decode('%s', '%s'): %v", string(dbPrivateKey.Private), passphrase, err)
 		return nil, "", err
 	}
 
@@ -199,6 +202,7 @@ func (rdb *RethinkDBKeyStore) GetPrivateKey(keyID string) (data.PrivateKey, data
 	// Create a new PrivateKey with unencrypted bytes
 	privKey, err := data.NewPrivateKey(pubKey, []byte(decryptedPrivKey))
 	if err != nil {
+		logrus.Errorf("### Error data.NewPrivateKey(), decryptedPrivkey='%s': %v", decryptedPrivKey, err)
 		return nil, "", err
 	}
 

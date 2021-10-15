@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary/signer"
 	"github.com/theupdateframework/notary/trustmanager"
 	"github.com/theupdateframework/notary/tuf/data"
@@ -17,6 +18,7 @@ func findKeyByID(cryptoServices signer.CryptoServiceIndex, keyID *pb.KeyID) (dat
 		if err == nil {
 			return key, role, nil
 		}
+		logrus.Errorf("### Error service.GetPrivateKey() keyID='%s': %v", keyID.ID, err)
 	}
 
 	return nil, "", trustmanager.ErrKeyNotFound{KeyID: keyID.ID}
