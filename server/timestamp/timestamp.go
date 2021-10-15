@@ -81,6 +81,7 @@ func GetOrCreateTimestamp(gun data.GUN, store storage.MetaStore, cryptoService s
 		logrus.Debug("error retrieving timestamp: ", err.Error())
 		return nil, nil, err
 	}
+	logrus.Infof("### TimeStampJSON: %s", string(timestampJSON))
 
 	prev := &data.SignedTimestamp{}
 	if err := json.Unmarshal(timestampJSON, prev); err != nil {
@@ -118,7 +119,7 @@ func GetOrCreateTimestamp(gun data.GUN, store storage.MetaStore, cryptoService s
 
 	tsUpdate, err := createTimestamp(gun, prev, snapshot, store, cryptoService)
 	if err != nil {
-		logrus.Error("Failed to create a new timestamp")
+		logrus.Errorf("Failed to create a new timestamp: %v", err)
 		return nil, nil, err
 	}
 	updates = append(updates, *tsUpdate)
